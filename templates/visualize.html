@@ -53,6 +53,31 @@ input[type="range"]::-moz-range-thumb {
     cursor: pointer;
     border: none; /* Ensure no border */
 }
+
+/* Loading spinner animation */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f4f6;
+    border-top-color: #111827;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Pulse animation for loading text */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
 </style>
 
 <div class="mb-8">
@@ -144,6 +169,16 @@ input[type="range"]::-moz-range-thumb {
                     <p>→ adjust to minimize penalty</p>
                 </div>
 
+                <div class="pt-4 border-t border-gray-300">
+                    <p class="text-xs mono text-gray-600 leading-relaxed">
+                        <span class="text-gray-500">note:</span> hosted on free server — requests may take 10-30s. 
+                        for faster performance, 
+                        <a href="https://github.com/ayushxpatne/regression-visualisation.git" target="_blank" class="underline hover:text-black">
+                            clone locally
+                        </a>
+                    </p>
+                </div>
+
                 <button id="resetBtn" class="btn-outline w-full mono text-sm">
                     reset to default
                 </button>
@@ -152,14 +187,15 @@ input[type="range"]::-moz-range-thumb {
     </div>
 
     <div class="lg:col-span-2">
-        <div class="border border-black p-6">
+        <div class="border border-black p-6 relative">
             <h2 class="text-xl font-semibold mb-4 mono">visualization</h2>
 
-            <div id="loading" class="text-center py-16 mono text-sm animate-pulse">
-                loading plot...
+            <div id="loading" class="text-center py-16 mono text-sm">
+                <div class="spinner mx-auto mb-3"></div>
+                <div class="pulse">loading plot...</div>
             </div>
 
-            <div id="plotContainer" class="hidden">
+            <div id="plotContainer" class="hidden relative">
                 <img id="plotImage" src="" alt="Regression Plot" class="w-full border border-black">
             </div>
 
@@ -169,7 +205,7 @@ input[type="range"]::-moz-range-thumb {
                     <p>● <span class="text-gray-700">black dots:</span> actual data points</p>
                     <p>● <span class="text-gray-700">gray dots:</span> predicted points on line</p>
                     <p>⋮ <span class="text-gray-700">dotted lines:</span> prediction errors</p>
-                    <p>━ <span class="text-gray-700">solid line:</span> your regression line</p>
+                    <p>— <span class="text-gray-700">solid line:</span> your regression line</p>
                 </div>
             </div>
         </div>
@@ -183,8 +219,6 @@ input[type="range"]::-moz-range-thumb {
                 that minimizes the total penalty!
             </p>
         </div>
-
-    
     </div>
 </div>
 {% endblock %}
@@ -215,13 +249,11 @@ input[type="range"]::-moz-range-thumb {
     const learningRateControl = document.getElementById('learningRateControl');
     const roundsControl = document.getElementById('roundsControl');
 
-    // NEW ELEMENTS FOR DYNAMIC L1/L2 INFO
     const regressionHeader = document.getElementById('regressionHeader');
     const regressionDescription = document.getElementById('regressionDescription');
-    // *****************************************
 
     let updateTimeout;
-    let regressionType = 'linear'; // Will be set from server
+    let regressionType = 'linear';
 
     // Fetch regression type on load
     fetch('/get_regression_type')
@@ -257,16 +289,13 @@ input[type="range"]::-moz-range-thumb {
         const isPolynomial = regressionType === 'polynomial';
         const isSine = regressionType === 'sine';
 
-        // Show/hide controls based on regression type
         document.getElementById('mSlider').parentElement.style.display = isLinear ? 'block' : 'none';
         document.getElementById('cSlider').parentElement.style.display = isLinear ? 'block' : 'none';
 
-        // Order control for polynomial and sine
         polyOrderControl.style.display = (isPolynomial || isSine) ? 'block' : 'none'; 
         learningRateControl.style.display = (isPolynomial || isSine) ? 'block' : 'none';
         roundsControl.style.display = (isPolynomial || isSine) ? 'block' : 'none';
 
-        // Update the penalty display formula based on type
         if (isLinear) {
             penalty.nextElementSibling.textContent = 'Σ|y - (mx + c)|';
         } else if (isPolynomial) {
@@ -275,7 +304,6 @@ input[type="range"]::-moz-range-thumb {
             penalty.nextElementSibling.textContent = 'L2 Error (Polynomial Fit to Sine)';
         }
         
-        // DYNAMICALLY UPDATE THE EXPLANATION TEXT
         updateRegressionInfoDisplay(regressionType);
     }
 
@@ -297,18 +325,15 @@ input[type="range"]::-moz-range-thumb {
             params.m = m;
             params.c = c;
             
-            // Re-apply L1 formula display for linear type
             penalty.nextElementSibling.textContent = 'Σ|y - (mx + c)|'; 
 
         } else {
             const order = parseInt(orderSlider.value);
-            // Calculate learning rate as 10 to the power of negative slider value
             const lrExponent = parseInt(lrSlider.value); 
             const lr = Math.pow(10, -lrExponent); 
             const rounds = parseInt(roundsSlider.value);
 
             orderValue.textContent = order;
-            // Display learning rate in scientific notation (e.g., 1.0e-3)
             lrValue.textContent = lr.toExponential(1); 
             roundsValue.textContent = rounds;
 
@@ -336,11 +361,14 @@ input[type="range"]::-moz-range-thumb {
                     body: JSON.stringify(params)
                 });
 
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
                 const data = await response.json();
 
                 if (data.image) {
                     plotImage.src = 'data:image/png;base64,' + data.image;
-                    // Penalty is L1 for linear, L2 for others in this implementation
                     penalty.textContent = data.penalty.toFixed(2); 
 
                     loading.classList.add('hidden');
@@ -348,9 +376,12 @@ input[type="range"]::-moz-range-thumb {
                 }
             } catch (error) {
                 console.error('Error updating plot:', error);
-                // Hide plot and show loading on error
                 plotContainer.classList.add('hidden');
                 loading.classList.remove('hidden');
+                loading.innerHTML = `
+                    <div class="text-red-600 font-semibold mb-2">⚠️ Request failed</div>
+                    <div class="text-xs">Server timeout or error. Try refreshing or reducing training rounds.</div>
+                `;
                 penalty.textContent = '--';
             }
         }, 300);
@@ -367,19 +398,14 @@ input[type="range"]::-moz-range-thumb {
         if (regressionType === 'linear') {
             mSlider.value = 3;
             cSlider.value = 0;
-            // Reset L1 display for linear
             penalty.nextElementSibling.textContent = 'Σ|y - (mx + c)|'; 
         } else {
             orderSlider.value = 3;
             lrSlider.value = 3; 
             roundsSlider.value = 1000;
-            // Reset L2 display for non-linear
             updateControlsVisibility();
         }
         updatePlot();
     });
-
-    // Initial plot is now called after fetching regressionType
-    // updatePlot(); 
 </script>
 {% endblock %}
