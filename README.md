@@ -5,6 +5,13 @@ This project is a sophisticated, interactive web application designed to provide
 It serves as an excellent educational tool for students to visualize abstract concepts like L1 vs. L2 penalties and the mechanics of Gradient Descent.
 
 -----
+## Deployment Status
+
+### You can check out a live deployment of this tool here: **[https://regression-visualisation.onrender.com/](https://regression-visualisation.onrender.com/)**
+
+>### **Note on Performance:** This application is hosted on a free tier service (Render) which may be slow to respond initially or during use. For the best experience and optimal speed, it is **highly recommended** to run the tool locally following the setup instructions below.
+
+---
 
 ## Key Features
 
