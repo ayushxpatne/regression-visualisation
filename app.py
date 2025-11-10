@@ -425,4 +425,4 @@ def get_polynomial_regression(x_arr, y_arr, order, learning_rate=0.01, max_round
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)

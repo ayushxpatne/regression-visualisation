@@ -3,6 +3,58 @@
 {% block title %}Visualize - Regression Visualizer{% endblock %}
 
 {% block content %}
+<style>
+/* *** CSS to enhance slider visibility ***
+    Styles the slider track (the line) to make it more prominent and consistent.
+*/
+input[type="range"] {
+    -webkit-appearance: none;
+    background: transparent; 
+    width: 100%;
+    height: 16px; /* Total height of the clickable area */
+}
+
+/* Styling the track for Chrome, Safari, and Edge */
+input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px; /* Height of the visible line */
+    background: #d1d5db; /* Light gray track color */
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Styling the track for Firefox */
+input[type="range"]::-moz-range-track {
+    width: 100%;
+    height: 8px; /* Height of the visible line */
+    background: #d1d5db; /* Light gray track color */
+    border-radius: 4px;
+    cursor: pointer;
+    border: none; /* Remove default border in Firefox */
+}
+
+/* Adjusting the thumb (knob) position for Chrome/Safari/Edge to center it on the track */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #111827; /* Dark knob color */
+    cursor: pointer;
+    margin-top: -4px; /* Pushes the thumb up 4px to center on the 8px track */
+}
+
+/* Adjusting the thumb for Firefox */
+input[type="range"]::-moz-range-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #111827; /* Dark knob color */
+    cursor: pointer;
+    border: none; /* Ensure no border */
+}
+</style>
+
 <div class="mb-8">
     <a href="/" class="mono text-sm hover:underline">← back to generate</a>
 </div>
@@ -132,7 +184,7 @@
             </p>
         </div>
 
-       
+    
     </div>
 </div>
 {% endblock %}
@@ -163,7 +215,7 @@
     const learningRateControl = document.getElementById('learningRateControl');
     const roundsControl = document.getElementById('roundsControl');
 
-    // *** NEW ELEMENTS FOR DYNAMIC L1/L2 INFO ***
+    // NEW ELEMENTS FOR DYNAMIC L1/L2 INFO
     const regressionHeader = document.getElementById('regressionHeader');
     const regressionDescription = document.getElementById('regressionDescription');
     // *****************************************
@@ -192,8 +244,8 @@
         } else if (type === 'polynomial' || type === 'sine') {
             regressionHeader.textContent = 'understanding L2 regression (for learning):';
             regressionDescription.innerHTML = `
-                L2 regression (Least Squares) minimizes the sum of squared differences. 
-                This is the standard cost function used by the Gradient Descent algorithm 
+                L2 regression (Least Squares) minimizes the sum of **squared differences**. 
+                This is the standard **cost function** used by the Gradient Descent algorithm 
                 to learn the optimal polynomial weights. It is highly effective but can be 
                 sensitive to extreme outliers.
             `;
@@ -223,7 +275,7 @@
             penalty.nextElementSibling.textContent = 'L2 Error (Polynomial Fit to Sine)';
         }
         
-        // *** DYNAMICALLY UPDATE THE EXPLANATION TEXT ***
+        // DYNAMICALLY UPDATE THE EXPLANATION TEXT
         updateRegressionInfoDisplay(regressionType);
     }
 
