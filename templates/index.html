@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Points - Regression Visualizer{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-12">
+        <h1 class="text-4xl font-semibold mb-4 mono">generate_points()</h1>
+        <p class="text-gray-700 mono text-sm">
+            create random data points for linear regression analysis
+        </p>
+    </div>
+
+    <div class="border border-black p-8">
+        <form id="generateForm" class="space-y-6">
+            <div>
+                <label class="block mb-2 font-medium mono">
+                    select regression_type <span class="text-gray-700 font-normal">(equation type)</span>
+                </label>
+                <select name="regression_type" id="regressionType" class="input-field" required>
+                    <option value="linear">Linear (y = mx + c)</option>
+                    <option value="polynomial">Polynomial (y = Σ w_j * x^j)</option>
+                    <option value="sine">Sine Wave (sin(2πx))</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block mb-2 font-medium mono">
+                    n <span class="text-gray-700 font-normal">(number of points)</span>
+                </label>
+                <input type="number" name="n" value="10" min="5" max="20" class="input-field" required>
+                <p class="text-xs text-gray-700 mt-1 mono">range: 5-20 points</p>
+            </div>
+
+            <!-- Linear regression parameters -->
+            <div id="linearParams">
+                <label class="block mb-2 font-medium mono">
+                    true_m <span class="text-gray-700 font-normal">(actual slope)</span>
+                </label>
+                <input type="number" name="reg_m" value="3" min="-10" max="10" class="input-field">
+                <p class="text-xs text-gray-700 mt-1 mono">the real slope value with random variation</p>
+            </div>
+
+            <!-- Polynomial regression parameters -->
+            <div id="polynomialParams" style="display: none;">
+                <label class="block mb-2 font-medium mono">
+                    polynomial_order <span class="text-gray-700 font-normal">(degree)</span>
+                </label>
+                <input type="number" name="poly_order" value="3" min="1" max="9" class="input-field">
+                <p class="text-xs text-gray-700 mt-1 mono">order of polynomial equation</p>
+            </div>
+
+            <!-- Sine wave parameters -->
+            <div id="sineParams" style="display: none;">
+                <label class="block mb-2 font-medium mono">
+                    noise <span class="text-gray-700 font-normal">(variation level)</span>
+                </label>
+                <input type="number" name="noise" value="1" min="0" max="5" step="0.1" class="input-field">
+                <p class="text-xs text-gray-700 mt-1 mono">amount of random noise</p>
+            </div>
+
+            <div class="pt-4">
+                <button type="submit" class="btn w-full mono">
+                    generate_points()
+                </button>
+            </div>
+        </form>
+
+        <div id="loading" class="hidden mt-6 text-center mono text-sm">
+            <div class="animate-pulse">generating random points...</div>
+        </div>
+
+        <div id="success" class="hidden mt-6 p-4 border border-black">
+            <p class="mono text-sm mb-2">✓ points generated successfully</p>
+            <p class="mono text-xs text-gray-700 mb-4">
+                n = <span id="pointCount"></span> points created
+            </p>
+            <a href="/visualize" class="btn-outline inline-block text-center mono">
+                proceed to visualization →
+            </a>
+        </div>
+    </div>
+
+    <!-- <div class="mt-4 p-4 bg-white border border-black">
+        <h3 class="font-semibold mono text-sm mb-2">legend:</h3>
+    </div> -->
+
+    <div class="mt-4 p-6 bg-white border border-black">
+        <h2 class="font-semibold mono mb-3">about this tool</h2>
+        <div class="space-y-2 text-sm mono text-gray-800">
+            <p>→ Linear Mode: Focuses on minimizing the **L1 Penalty** (Sum of Absolute Errors) by directly
+                adjusting the line's slope (m) and intercept (c).</p>
+            <p>→ Polynomial / Sine Modes: Uses **Gradient Descent** to find a best-fit polynomial function of a
+                specified *order*.</p>
+            <p>→ Hyperparameter Tuning: Allows deep-dive control over the core learning parameters: the **Order** of
+                the polynomial, the exponential **Learning Rate** (10⁻ˣ), and the number of **Training Rounds**.</p>
+            <p class="pt-2 text-xs text-gray-700">
+                Linear Penalty (L1) = Σ|y - (mx + c)| &nbsp; | &nbsp; Non-Linear Error (L2) = Sum of Squared Errors
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const regressionType = document.getElementById('regressionType');
+    const linearParams = document.getElementById('linearParams');
+    const polynomialParams = document.getElementById('polynomialParams');
+    const sineParams = document.getElementById('sineParams');
+
+    regressionType.addEventListener('change', (e) => {
+        linearParams.style.display = 'none';
+        polynomialParams.style.display = 'none';
+        sineParams.style.display = 'none';
+
+        if (e.target.value === 'linear') {
+            linearParams.style.display = 'block';
+        } else if (e.target.value === 'polynomial') {
+            polynomialParams.style.display = 'block';
+        } else if (e.target.value === 'sine') {
+            sineParams.style.display = 'block';
+        }
+    });
+
+    document.getElementById('generateForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const loading = document.getElementById('loading');
+        const success = document.getElementById('success');
+        const form = e.target;
+
+        loading.classList.remove('hidden');
+        success.classList.add('hidden');
+
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('/generate', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('pointCount').textContent = data.n;
+                success.classList.remove('hidden');
+            }
+        } catch (error) {
+            alert('Error generating points: ' + error.message);
+        } finally {
+            loading.classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Regression Visualizer{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-webkit-slider-track {
+            background-color: #000;
+            height: 2px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -6px;
+            background-color: #000;
+            height: 16px;
+            width: 16px;
+            border-radius: 0;
+        }
+        
+        input[type="range"]::-moz-range-track {
+            background-color: #000;
+            height: 2px;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            border: none;
+            background-color: #000;
+            height: 16px;
+            width: 16px;
+            border-radius: 0;
+        }
+        
+        .btn {
+            @apply px-6 py-3 bg-black text-white hover:bg-gray-800 transition-colors border border-black;
+        }
+        
+        .btn-outline {
+            @apply px-6 py-3 bg-white text-black hover:bg-gray-50 transition-colors border border-black;
+        }
+        
+        .input-field {
+            @apply w-full px-4 py-3 border border-black focus:outline-none focus:ring-1 focus:ring-black;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-white text-black min-h-screen">
+    <nav class="border-b border-black py-4 mb-8">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="text-xl font-semibold mono hover:underline">
+                    regression_visualizer
+                </a>
+              
+            </div>
+        </div>
+    </nav>
+    
+    <main class="container mx-auto px-4 max-w-6xl">
+        {% block content %}{% endblock %}
+    </main>
+    
+   <footer class="mt-16 py-8 border-t border-black">
+    <div class="container mx-auto px-4 text-center text-sm mono text-gray-700">
+        <p>Built for understanding regression penalties | Find the code and star the project on <a href="[YOUR GITHUB REPO URL]" target="_blank" class="hover:underline text-black font-semibold">GitHub</a>.</p>
+        <p class="mt-1 text-xs text-gray-500">A project by @ayushxpatne</p>
+    </div>
+</footer>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
